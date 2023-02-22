@@ -1,25 +1,35 @@
 const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
-const bobyParse = require("body-parse");
-const routes = require("./routes");
+const bodyParser = require("body-parser");
+const userRouter = require("./routes/users");
 
 const { PORT = 3000 } = process.env;
-
-// mongoose.connect("mongodb://localhost:27017/mydb", {
-//   useNewUrlParser: true,
-//   useCreateIndex: true,
-//   useFindAndModify: false,
-// });
-
 const app = express();
 
-app.use(bobyParse);
+app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get("/", (req, res) => {
-  res.send("hello, i'm changed. again");
+//подклчюение к mongoDB
+mongoose.connect(
+  "mongodb://127.0.0.1:27017/mestodb",
+  {
+    useNewUrlParser: true,
+  },
+  () => console.log("App is connected to mongoDB")
+);
+
+app.use((req, res, next) => {
+  req.user = {
+    _id: "63f6889ab055656c593c4a8a",
+  };
+
+  next();
 });
 
+app.use("/users", userRouter);
+app.use(express.static(path.join(__dirname, "public")));
+
 app.listen(PORT, () => {
-  console.log("hello");
+  console.log(`Now listening port: ${PORT}`);
 });
