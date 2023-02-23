@@ -8,16 +8,19 @@ const {
   deleteCardLike,
 } = require("../controllers/cards");
 
-//получение имеющихся карточек
+//рутер получения имеющихся карточек
 router.get("/", getCards);
 
-//создание новой карточки
+//рутер создания новой карточки
 router.post("/", createCard);
 
+//рутер удаления карточеки
 router.delete("/:cardId", deleteCard);
 
+//рутер постановки лайка карточке
 router.put("/:cardId/likes", putCardLike);
 
+//рутер удаления лайка у карточки
 router.delete("/:cardId/likes", deleteCardLike);
 
 module.exports = router;

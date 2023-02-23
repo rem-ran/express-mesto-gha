@@ -1,57 +1,95 @@
 const Card = require("../models/card");
 
-//получение имеющихся карточек
+//Статусы ошибок вынесены в константы согласно ТЗ
+const ERROR_CODE_400 = 400;
+const ERROR_CODE_404 = 404;
+const ERROR_CODE_500 = 500;
+
+//контроллер получения имеющихся карточек
 module.exports.getCards = (req, res) => {
   Card.find({})
     .then((cards) => res.send(cards))
     .catch(() =>
-      res.status(500).send({ message: "Произошла ошибка получения карточки" })
+      res
+        .status(ERROR_CODE_500)
+        .send({ message: "Произошла ошибка получения карточек" })
     );
 };
 
-//создание новой карточки
+//контроллер создания новой карточки
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
   let owner = req.user._id;
 
   Card.create({ name, link, owner })
-    .then((card) => res.send(card))
-    .catch(() =>
-      res.status(500).send({ message: "Произошла ошибка создания карточки" })
-    );
+    .then(() => res.send({ message: "Карточка успешно создана" }))
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return res.status(ERROR_CODE_400).send({
+          message: "Переданы некорректные данные при создании карточки.",
+        });
+      }
+
+      return res.status(ERROR_CODE_500).send({
+        message: "На сервере произошла ошибка",
+      });
+    });
 };
 
-//удаление карточек
+//контроллер удаления карточеки
 module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
 
   Card.findByIdAndRemove(cardId)
-    .then((card) => res.send(card))
+    .then(() => res.send({ message: "Карточка успешно удалена" }))
     .catch(() =>
-      res.status(500).send({ message: "Произошла ошибка удаления карточки" })
+      res
+        .status(ERROR_CODE_404)
+        .send({ message: "Карточка с указанным _id не найдена." })
     );
 };
 
-//поставить лайк карточке
+//контроллер постановки лайка карточке
 module.exports.putCardLike = (req, res) => {
-  Card.findByIdAndUpdate(req.params.cardId, {
-    $addToSet: { likes: req.user._id },
-  })
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    {
+      $addToSet: { likes: req.user._id },
+    },
+    { new: true }
+  )
     .then(() => res.send({ message: "Лайк успешно поставлен" }))
-    .catch(() =>
-      res
-        .status(500)
-        .send({ message: "Произошла ошибка добавления лайка карточке" })
-    );
+
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return res.status(ERROR_CODE_404).send({
+          message: "Передан несуществующий _id карточки.",
+        });
+      }
+
+      return res.status(ERROR_CODE_500).send({
+        message: `На сервере произошла ошибка.`,
+      });
+    });
 };
 
-//удалить лайк у карточки
+//контроллер удаления лайка у карточки
 module.exports.deleteCardLike = (req, res) => {
-  Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } })
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $pull: { likes: req.user._id } },
+    { new: true }
+  )
     .then(() => res.send({ message: "Лайк успешно удалён" }))
-    .catch(() =>
-      res
-        .status(500)
-        .send({ message: "Произошла ошибка удаления лайка карточки" })
-    );
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return res.status(ERROR_CODE_404).send({
+          message: "Передан несуществующий _id карточки.",
+        });
+      }
+
+      return res.status(ERROR_CODE_500).send({
+        message: `На сервере произошла ошибка.`,
+      });
+    });
 };

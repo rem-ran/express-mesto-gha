@@ -4,23 +4,23 @@ const {
   getUsers,
   getUser,
   createUser,
-  // updateUser,
-  // updateUserAvatar,
+  updateUser,
+  updateUserAvatar,
 } = require("../controllers/users");
 
-//получение имеющихся пользователей
+//рутер получение имеющихся пользователей
 router.get("/", getUsers);
 
-//поиск пользователя по его id
+//рутер поиск пользователя по его id
 router.get("/:userId", getUser);
 
-//создание нового пользователя
+//рутер создание нового пользователя
 router.post("/", createUser);
 
-// обновление данных пользователя
-// router.patch("/me", updateUser);
+//рутер обновление данных пользователя
+router.patch("/me", updateUser);
 
-//обновление аватара пользователя
-// router.patch("/me/avatar", updateUserAvatar);
+//рутер обновление аватара пользователя
+router.patch("/me/avatar", updateUserAvatar);
 
 module.exports = router;

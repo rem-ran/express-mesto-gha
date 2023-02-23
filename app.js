@@ -6,10 +6,10 @@ const userRouter = require("./routes/users");
 const cardRouter = require("./routes/cards");
 
 const { PORT = 3000 } = process.env;
+
 const app = express();
 
 app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: true }));
 
 //подклчюение к mongoDB
 mongoose.connect(
@@ -20,6 +20,7 @@ mongoose.connect(
   () => console.log("App is connected to mongoDB")
 );
 
+//мидлвэр временного решения авторизации, согласно 13го ТЗ
 app.use((req, res, next) => {
   req.user = {
     _id: "63f6889ab055656c593c4a8a",
@@ -29,10 +30,15 @@ app.use((req, res, next) => {
 });
 
 app.use("/cards", cardRouter);
+
 app.use("/users", userRouter);
 
 app.use(express.static(path.join(__dirname, "public")));
 
+app.use((req, res) => {
+  res.status(404).send({ message: "Запрошен несуществующий роут" });
+});
+
 app.listen(PORT, () => {
-  console.log(`Now listening port: ${PORT}`);
+  console.log(`Now listening on port: ${PORT}`);
 });
