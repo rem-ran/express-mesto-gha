@@ -35,10 +35,6 @@ app.use("/users", userRouter);
 
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use((req, res) => {
-  res.status(404).send({ message: "Запрошен несуществующий роут" });
-});
-
 app.listen(PORT, () => {
   console.log(`Now listening on port: ${PORT}`);
 });
