@@ -31,3 +31,27 @@ module.exports.deleteCard = (req, res) => {
       res.status(500).send({ message: "Произошла ошибка удаления карточки" })
     );
 };
+
+//поставить лайк карточке
+module.exports.putCardLike = (req, res) => {
+  Card.findByIdAndUpdate(req.params.cardId, {
+    $addToSet: { likes: req.user._id },
+  })
+    .then(() => res.send({ message: "Лайк успешно поставлен" }))
+    .catch(() =>
+      res
+        .status(500)
+        .send({ message: "Произошла ошибка добавления лайка карточке" })
+    );
+};
+
+//удалить лайк у карточки
+module.exports.deleteCardLike = (req, res) => {
+  Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } })
+    .then(() => res.send({ message: "Лайк успешно удалён" }))
+    .catch(() =>
+      res
+        .status(500)
+        .send({ message: "Произошла ошибка удаления лайка карточки" })
+    );
+};
