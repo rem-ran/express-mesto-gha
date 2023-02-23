@@ -8,19 +8,22 @@ const cardSchema = new mongoose.Schema({
     maxlength: 30,
   },
   link: {
-    type: ObjectId,
-    required: true,
-  },
-  owner: {
     type: String,
     required: true,
   },
-  likes: {
-    type: Array,
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
   },
-  createdAt: {
-    type: Date,
-  },
+  // likes: {
+  //   type: String,
+  //   // type: mongoose.Schema.Types.ObjectId,
+  //   default: {},
+  // },
+  // createdAt: {
+  //   type: Date,
+  //   default: Date.now,
+  // },
 });
 
 module.exports = mongoose.model("card", cardSchema);
