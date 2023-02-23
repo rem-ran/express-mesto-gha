@@ -13,9 +13,3 @@ node_modules
 .DS_Store
 .idea
 .vscode
-
-# Editor config
-.editorconfig
-
-# Eslint
-.eslintrc
