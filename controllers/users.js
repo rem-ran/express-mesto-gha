@@ -69,7 +69,7 @@ module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, { runValidators: true })
-    .then((user) => res.send(user))
+    .then(() => res.send({ name, about }))
 
     .catch((err) => {
       if (err.name === "ValidationError") {
@@ -95,7 +95,7 @@ module.exports.updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { runValidators: true })
-    .then((user) => res.send(user))
+    .then(() => res.send({ avatar }))
 
     .catch((err) => {
       if (err.name === "ValidationError") {
