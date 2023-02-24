@@ -46,7 +46,7 @@ module.exports.createUser = (req, res) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_400).send({ message: err });
+        return res.status(ERROR_CODE_400).send({ message: err.message });
       }
 
       return res.status(ERROR_CODE_500).send({
@@ -64,7 +64,7 @@ module.exports.updateUser = (req, res) => {
 
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_400).send({ message: err });
+        return res.status(ERROR_CODE_400).send({ message: err.message });
       }
 
       if (err.name === 'CastError') {
