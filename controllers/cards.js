@@ -22,7 +22,7 @@ module.exports.createCard = (req, res) => {
   let owner = req.user._id;
 
   Card.create({ name, link, owner })
-    .then(() => res.send({ message: "Карточка успешно создана" }))
+    .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === "ValidationError") {
         return res.status(ERROR_CODE_400).send({
@@ -58,11 +58,20 @@ module.exports.putCardLike = (req, res) => {
     },
     { new: true }
   )
-    .then(() => res.send({ message: "Лайк успешно поставлен" }))
+
+    .then((card) => {
+      if (card === null) {
+        return res
+          .status(ERROR_CODE_404)
+          .send({ message: "Карточка по указанному _id не найдена." });
+      } else {
+        res.send({ message: "Лайк успешно поставлен" });
+      }
+    })
 
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status(ERROR_CODE_404).send({
+        return res.status(ERROR_CODE_400).send({
           message: "Передан несуществующий _id карточки.",
         });
       }
@@ -80,10 +89,20 @@ module.exports.deleteCardLike = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true }
   )
-    .then(() => res.send({ message: "Лайк успешно удалён" }))
+
+    .then((card) => {
+      if (card === null) {
+        return res
+          .status(ERROR_CODE_404)
+          .send({ message: "Карточка по указанному _id не найдена." });
+      } else {
+        res.send({ message: "Лайк успешно удалён" });
+      }
+    })
+
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status(ERROR_CODE_404).send({
+        return res.status(ERROR_CODE_400).send({
           message: "Передан несуществующий _id карточки.",
         });
       }
