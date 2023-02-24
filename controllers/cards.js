@@ -41,10 +41,20 @@ module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
 
   Card.findByIdAndRemove(cardId)
-    .then(() => res.send({ message: "Карточка успешно удалена" }))
+
+    .then((card) => {
+      if (card === null) {
+        return res
+          .status(ERROR_CODE_404)
+          .send({ message: "Карточка по указанному _id не найдена." });
+      } else {
+        res.send({ message: "Карточка успешно удалена" });
+      }
+    })
+
     .catch(() =>
       res
-        .status(ERROR_CODE_404)
+        .status(ERROR_CODE_400)
         .send({ message: "Карточка с указанным _id не найдена." })
     );
 };
