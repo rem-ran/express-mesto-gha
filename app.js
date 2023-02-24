@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
-const { ERROR_CODE_400 } = require('./utils/constants');
+const { ERROR_CODE_404 } = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
 
@@ -36,7 +36,7 @@ app.use('/users', userRouter);
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res) => {
-  res.status(ERROR_CODE_400).send({ message: 'Запрошен несуществующий роут' });
+  res.status(ERROR_CODE_404).send({ message: 'Запрошен несуществующий роут' });
 });
 
 app.listen(PORT);
