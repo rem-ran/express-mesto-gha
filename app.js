@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 // const auth = require('./middlewares/auth');
-const { createUser } = require('./controllers/users');
+const { login, createUser } = require('./controllers/users');
 const { ERROR_CODE_404 } = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
@@ -20,7 +20,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
 });
 
 // авторизация пользователя
-// app.post('/signin', login);
+app.post('/signin', login);
 
 // создание нового пользователя
 app.post('/signup', createUser);

@@ -1,11 +1,11 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const bcrypt = require('bcryptjs');
-// const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 const {
   ERROR_CODE_400,
-  // ERROR_CODE_401,
+  ERROR_CODE_401,
   ERROR_CODE_404,
   ERROR_CODE_409,
   ERROR_CODE_500,
@@ -129,23 +129,23 @@ module.exports.updateUserAvatar = (req, res) => {
     });
 };
 
-// module.exports.login = (req, res) => {
-//   const { email, password } = req.body;
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
 
-//   return User.findUserByCredentials(email, password)
-//     .then((user) => {
-//       const token = jwt.sign(
-//         { _id: user._id },
-//         'some-secret-key',
-//         { expiresIn: '7d' },
-//       );
-//       res.send({ token });
-//     })
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        'some-secret-key',
+        { expiresIn: '7d' },
+      );
+      res.send({ token });
+    })
 
-//     .catch((err) => {
-//       // ошибка аутентификации
-//       res
-//         .status(ERROR_CODE_401)
-//         .send({ message: err.message });
-//     });
-// };
+    .catch((err) => {
+      // ошибка аутентификации
+      res
+        .status(ERROR_CODE_401)
+        .send({ message: err.message });
+    });
+};
