@@ -1,5 +1,9 @@
 const Card = require('../models/card');
-const { ERROR_CODE_400, ERROR_CODE_404, ERROR_CODE_500 } = require('../utils/constants');
+const {
+  ERROR_CODE_400,
+  ERROR_CODE_404,
+  ERROR_CODE_500,
+} = require('../utils/constants');
 
 // контроллер получения имеющихся карточек
 module.exports.getCards = (req, res) => {

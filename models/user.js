@@ -1,24 +1,56 @@
 const mongoose = require('mongoose');
+// eslint-disable-next-line import/no-extraneous-dependencies
+// const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Поле Имя обязательно к заполнению'],
+    default: 'Жак-Ив Кусто',
     minlength: [2, 'Имя должно состоять как минимум из 2 символов'],
     maxlength: [30, 'Имя должно состоять максимум из 30 символов'],
+
   },
 
   about: {
     type: String,
-    required: [true, 'Поле Профессия обязательно к заполнению'],
     minlength: [2, 'Профессия должна состоять как минимум из 2 символов'],
     maxlength: [30, 'Профессия должна состоять максимум из 30 символов'],
+    default: 'Исследователь',
   },
 
   avatar: {
     type: String,
-    required: [true, 'Поле Аватар обязательно к заполнению'],
+    default:
+      'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+  },
+  email: {
+    type: String,
+    required: [true, 'Поле email обязательно к заполнению'],
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: [true, 'Поле password обязательно к заполнению'],
+    unique: true,
   },
 });
+
+// userSchema.statics.findUserByCredentials = function (email, password) {
+//   return this.findOne({ email })
+//     .then((user) => {
+//       if (!user) {
+//         return Promise.reject(new Error('Неправильные почта или пароль'));
+//       }
+
+//       return bcrypt.compare(password, user.password)
+//         .then((matched) => {
+//           if (!matched) {
+//             return Promise.reject(new Error('Неправильные почта или пароль'));
+//           }
+
+//           return user;
+//         });
+//     });
+// };
 
 module.exports = mongoose.model('user', userSchema);

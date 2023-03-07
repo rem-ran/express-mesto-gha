@@ -1,5 +1,15 @@
+/* eslint-disable import/no-extraneous-dependencies */
+const bcrypt = require('bcryptjs');
+// const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { ERROR_CODE_400, ERROR_CODE_404, ERROR_CODE_500 } = require('../utils/constants');
+
+const {
+  ERROR_CODE_400,
+  // ERROR_CODE_401,
+  ERROR_CODE_404,
+  ERROR_CODE_409,
+  ERROR_CODE_500,
+} = require('../utils/constants');
 
 // контроллер получения имеющихся пользователей
 module.exports.getUsers = (req, res) => {
@@ -40,13 +50,27 @@ module.exports.getUser = (req, res) => {
 
 // контроллер создания нового пользователя
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res.status(ERROR_CODE_400).send({ message: err.message });
+      }
+
+      if (err.code === 11000) {
+        return res.status(ERROR_CODE_409).send({ message: 'Пользователь с таким email уже существует' });
       }
 
       return res.status(ERROR_CODE_500).send({
@@ -104,3 +128,24 @@ module.exports.updateUserAvatar = (req, res) => {
       });
     });
 };
+
+// module.exports.login = (req, res) => {
+//   const { email, password } = req.body;
+
+//   return User.findUserByCredentials(email, password)
+//     .then((user) => {
+//       const token = jwt.sign(
+//         { _id: user._id },
+//         'some-secret-key',
+//         { expiresIn: '7d' },
+//       );
+//       res.send({ token });
+//     })
+
+//     .catch((err) => {
+//       // ошибка аутентификации
+//       res
+//         .status(ERROR_CODE_401)
+//         .send({ message: err.message });
+//     });
+// };

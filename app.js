@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
+// const auth = require('./middlewares/auth');
+const { createUser } = require('./controllers/users');
 const { ERROR_CODE_404 } = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
@@ -13,12 +15,15 @@ const app = express();
 app.use(bodyParser.json());
 
 // подклчюение к mongoDB
-mongoose.connect(
-  'mongodb://127.0.0.1:27017/mestodb',
-  {
-    useNewUrlParser: true,
-  },
-);
+mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
+  useNewUrlParser: true,
+});
+
+// авторизация пользователя
+// app.post('/signin', login);
+
+// создание нового пользователя
+app.post('/signup', createUser);
 
 // мидлвэр временного решения авторизации, согласно 13го ТЗ
 app.use((req, res, next) => {
@@ -28,6 +33,9 @@ app.use((req, res, next) => {
 
   next();
 });
+
+// авторизация
+// app.use(auth);
 
 app.use('/cards', cardRouter);
 
