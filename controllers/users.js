@@ -20,8 +20,17 @@ module.exports.getUsers = (req, res) => {
       .send({ message: 'Произошла ошибка получения пользователей' }));
 };
 
-// контроллер поиска пользователя по его id
+// контроллер получания пользователя
 module.exports.getUser = (req, res) => {
+  User.findOne({})
+    .then((user) => res.send(user))
+    .catch(() => res
+      .status(ERROR_CODE_500)
+      .send({ message: 'Произошла ошибка получения пользователя' }));
+};
+
+// контроллер поиска пользователя по его id
+module.exports.getUserById = (req, res) => {
   const { userId } = req.params;
 
   User.findById(userId)
@@ -129,6 +138,7 @@ module.exports.updateUserAvatar = (req, res) => {
     });
 };
 
+// контроллер логина пользователя
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
 
@@ -136,14 +146,19 @@ module.exports.login = (req, res) => {
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        'some-secret-key',
+        'someKey',
         { expiresIn: '7d' },
       );
-      res.send({ token });
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000,
+          httpOnly: true,
+          sameSite: true,
+        })
+        .end();
     })
 
     .catch((err) => {
-      // ошибка аутентификации
       res
         .status(ERROR_CODE_401)
         .send({ message: err.message });

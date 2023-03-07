@@ -1,27 +1,28 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-// const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 
-// module.exports = (req, res, next) => {
-//   const { authorization } = req.headers;
+const { ERROR_CODE_401 } = require('../utils/constants');
 
-//   if (!authorization || !authorization.startsWith('Bearer ')) {
-//     return res
-//       .status(401)
-//       .send({ message: 'Необходима авторизация 1' });
-//   }
+module.exports = (req, res, next) => {
+  const token = req.cookies.jwt;
 
-//   const token = authorization.replace('Bearer ', '');
-//   let payload;
+  if (!token) {
+    return res
+      .status(ERROR_CODE_401)
+      .send({ message: 'Необходима авторизация 1' });
+  }
 
-//   try {
-//     payload = jwt.verify(token, 'some-secret-key');
-//   } catch (err) {
-//     return res
-//       .status(401)
-//       .send({ message: 'Необходима авторизация 2' });
-//   }
+  let payload;
 
-//   req.user = payload; // записываем пейлоуд в объект запроса
+  try {
+    payload = jwt.verify(token, 'someKey');
+  } catch (err) {
+    return res
+      .status(ERROR_CODE_401)
+      .send({ message: 'Необходима авторизация 2' });
+  }
 
-//   return next(); // пропускаем запрос дальше
-// };
+  req.user = payload;
+
+  return next();
+};
