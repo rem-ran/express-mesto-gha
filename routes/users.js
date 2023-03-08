@@ -11,14 +11,14 @@ const {
 // рутер получение имеющихся пользователей
 router.get('/', getUsers);
 
+// рутер получения своего пользователя
+router.get('/me', getUser);
+
 // рутер поиск пользователя по его id
 router.get('/:userId', getUserById);
 
 // рутер обновление данных пользователя
 router.patch('/me', updateUser);
-
-// рутер получения своего пользователя
-router.get('/me', getUser);
 
 // рутер обновление аватара пользователя
 router.patch('/me/avatar', updateUserAvatar);

@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -22,7 +21,7 @@ module.exports.getUsers = (req, res) => {
 
 // контроллер получания пользователя
 module.exports.getUser = (req, res) => {
-  User.findOne({})
+  User.findById(req.user._id)
     .then((user) => res.send(user))
     .catch(() => res
       .status(ERROR_CODE_500)

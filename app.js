@@ -1,5 +1,4 @@
 const express = require('express');
-// eslint-disable-next-line import/no-extraneous-dependencies
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -31,16 +30,7 @@ app.post('/signin', login);
 // создание нового пользователя
 app.post('/signup', createUser);
 
-// мидлвэр временного решения авторизации, согласно 13го ТЗ
-// app.use((req, res, next) => {
-//   req.user = {
-//     _id: '63f6889ab055656c593c4a8a',
-//   };
-
-//   next();
-// });
-
-// авторизация
+// защита авторизацией
 app.use(auth);
 
 app.use('/cards', cardRouter);
