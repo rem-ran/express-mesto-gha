@@ -35,22 +35,42 @@ module.exports.createCard = (req, res) => {
 // контроллер удаления карточеки
 module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
+  const { _id } = req.user;
 
-  Card.findByIdAndRemove(cardId)
+  Card.findById(cardId)
 
-    .then((card) => {
-      if (card === null) {
-        return res
-          .status(ERROR_CODE_404)
-          .send({ message: 'Карточка по указанному _id не найдена.' });
-      }
-      return res.send({ message: 'Карточка успешно удалена' });
-    })
+  .then((card) => {
+    if (card === null) {
+      return res
+        .status(ERROR_CODE_400)
+        .send({ message: 'Карточка по указанному _id не найдена.' });
+    }
 
-    .catch(() => res
-      .status(ERROR_CODE_400)
-      .send({ message: 'Карточка с указанным _id не найдена.' }));
-};
+    if (card.owner == _id) {
+      return Card.findByIdAndRemove(cardId)
+        .then(() => res.send({ message: 'Карточка удалена' }))
+
+        .catch((err) => res
+          .status(ERROR_CODE_500)
+          .send({message: 'На сервере произошла ошибка.'}));
+
+    } return res.send({ message: 'Нельзя удалять чужие карточки' })
+  })
+
+  .catch((err) => {
+    if (err.name === 'CastError') {
+      return res.status(ERROR_CODE_404).send({
+        message: 'Указан некорректный id карточки',
+      });
+    }
+
+    return res.status(ERROR_CODE_500).send({
+      message: 'На сервере произошла ошибка.',
+    });
+
+  });
+
+  }
 
 // контроллер постановки лайка карточке
 module.exports.putCardLike = (req, res) => {
@@ -74,7 +94,7 @@ module.exports.putCardLike = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         return res.status(ERROR_CODE_400).send({
-          message: 'Передан несуществующий _id карточки.',
+          message: 'Указан некорректный id карточки',
         });
       }
 
@@ -104,7 +124,7 @@ module.exports.deleteCardLike = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         return res.status(ERROR_CODE_400).send({
-          message: 'Передан несуществующий _id карточки.',
+          message: 'Указан некорректный id карточки',
         });
       }
 

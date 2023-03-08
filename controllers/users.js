@@ -21,7 +21,8 @@ module.exports.getUsers = (req, res) => {
 
 // контроллер получания пользователя
 module.exports.getUser = (req, res) => {
-  User.findById(req.user._id)
+  const { _id } = req.user;
+  User.findById(_id)
     .then((user) => res.send(user))
     .catch(() => res
       .status(ERROR_CODE_500)
