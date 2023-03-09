@@ -22,7 +22,7 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 // контроллер получания пользователя
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   const { _id } = req.user;
   User.findById(_id)
     .then((user) => res.send(user))
