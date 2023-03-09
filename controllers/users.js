@@ -56,13 +56,11 @@ module.exports.createUser = (req, res, next) => {
       password: hash,
     }))
 
-    .then((user) => {
-      user = user.toObject();
-      delete user.password;
-      res.send(user);
+    .then(() => {
+      res.send(new User({
+        name, about, avatar, email,
+      }));
     })
-
-  // .then((user) => res.send(user))
 
     .catch((err) => {
       if (err.code === 11000) {

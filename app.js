@@ -60,6 +60,7 @@ app.use('/users', userRouter);
 app.use(errors());
 
 // централизованный обработчик ошибок
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (err) {
     res.status(err.statusCode).send({ message: err.message });
