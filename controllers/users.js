@@ -6,7 +6,6 @@ const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const NotValidError = require('../errors/NotValidError');
 const SameEntryError = require('../errors/SameEntryError');
-const ServerError = require('../errors/ServerError');
 const ValidationError = require('../errors/ValidationError');
 const WrongMailOrPassError = require('../errors/WrongMailOrPassError');
 

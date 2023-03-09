@@ -2,13 +2,13 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const mongoose = require('mongoose');
-const { celebrate, Joi, errors } = require('celebrate');
+const { celebrate, Joi, errors, isCelebrateError } = require('celebrate');
 const bodyParser = require('body-parser');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 const auth = require('./middlewares/auth');
 const { login, createUser } = require('./controllers/users');
-const { ERROR_CODE_404, ERROR_CODE_500 } = require('./utils/constants');
+const { ERROR_CODE_404, ERROR_CODE_500, ERROR_CODE_400 } = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
 
@@ -25,13 +25,30 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// авторизация пользователя
-app.post('/signin', login);
+// авторизация пользователя с валидацией
+app.post('/signin', celebrate({
 
-// создание нового пользователя
-app.post('/signup', createUser);
+body: Joi.object().keys({
+  email: Joi.string().required(),
+  password: Joi.string().required(),
+}),
 
-// защита авторизацией
+}), login);
+
+// создание нового пользователя с валидацией
+app.post('/signup', celebrate({
+
+body: Joi.object().keys({
+  name: Joi.string(),
+  about: Joi.string(),
+  avatar: Joi.string(),
+  email: Joi.string().required(),
+  password: Joi.string().required(),
+}),
+
+}), createUser);
+
+// защита дальнейших рутов авторизацией
 app.use(auth);
 
 app.use('/cards', cardRouter);
@@ -39,11 +56,28 @@ app.use('/cards', cardRouter);
 app.use('/users', userRouter);
 
 
+
+
+// app.use((err, req, res, next) => {
+
+//   if (isCelebrateError(err)) {
+//     res.status(ERROR_CODE_400).send({ message: err})
+//   }
+
+//   next(err);
+// });
+
 // обработчик ошибок celebrate
-app.use(errors());
+// app.use(errors());
+
 
 // централизованный обработчик ошибок
 app.use((err, req, res, next) => {
+
+  // обработчик ошибок celebrate
+  if (isCelebrateError(err)) {
+    res.status(ERROR_CODE_400).send({message: err.message})
+  }
 
   if (err) {
     res.status(err.statusCode).send({ message: err.message });
