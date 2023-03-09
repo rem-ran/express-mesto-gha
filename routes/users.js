@@ -1,9 +1,11 @@
 const router = require('express').Router();
+const { celebrate, Joi } = require('celebrate');
+const { regexUrl } = require('../utils/regexUrl');
 
 const {
   getUsers,
   getUser,
-  createUser,
+  getUserById,
   updateUser,
   updateUserAvatar,
 } = require('../controllers/users');
@@ -11,16 +13,35 @@ const {
 // рутер получение имеющихся пользователей
 router.get('/', getUsers);
 
-// рутер поиск пользователя по его id
-router.get('/:userId', getUser);
+// рутер получения своего пользователя
+router.get('/me', getUser);
 
-// рутер создание нового пользователя
-router.post('/', createUser);
+// рутер поиска пользователя по его id
+router.get('/:userId', celebrate({
+
+  params: Joi.object().keys({
+    userId: Joi.string().alphanum().length(24),
+  }),
+
+}), getUserById);
 
 // рутер обновление данных пользователя
-router.patch('/me', updateUser);
+router.patch('/me', celebrate({
+
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+  }),
+
+}), updateUser);
 
 // рутер обновление аватара пользователя
-router.patch('/me/avatar', updateUserAvatar);
+router.patch('/me/avatar', celebrate({
+
+  body: Joi.object().keys({
+    avatar: Joi.string().regex(regexUrl),
+  }),
+
+}), updateUserAvatar);
 
 module.exports = router;

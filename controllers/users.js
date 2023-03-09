@@ -1,106 +1,115 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { ERROR_CODE_400, ERROR_CODE_404, ERROR_CODE_500 } = require('../utils/constants');
+
+// импорт собственных ошибок
+const NotFoundError = require('../errors/NotFoundError');
+const SameEntryError = require('../errors/SameEntryError');
+const WrongMailOrPassError = require('../errors/WrongMailOrPassError');
 
 // контроллер получения имеющихся пользователей
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(() => res
-      .status(ERROR_CODE_500)
-      .send({ message: 'Произошла ошибка получения пользователей' }));
+    .catch(next);
+};
+
+// контроллер получания пользователя
+module.exports.getUser = (req, res, next) => {
+  const { _id } = req.user;
+  User.findById(_id)
+    .then((user) => res.send(user))
+    .catch(next);
 };
 
 // контроллер поиска пользователя по его id
-module.exports.getUser = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   const { userId } = req.params;
 
   User.findById(userId)
 
     .then((user) => {
-      if (user === null) {
-        return res
-          .status(ERROR_CODE_404)
-          .send({ message: 'Пользователь по указанному _id не найден.' });
+      if (!user) {
+        throw new NotFoundError('Пользователь с указанным _id не найден.');
       }
+
       return res.send(user);
     })
 
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res
-          .status(ERROR_CODE_400)
-          .send({ message: '_id указан некорректно.' });
-      }
-
-      return res.status(ERROR_CODE_500).send({
-        message: 'На сервере произошла ошибка',
-      });
-    });
+    .catch(next);
 };
 
 // контроллер создания нового пользователя
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+module.exports.createUser = (req, res, next) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.send(user))
+  bcrypt
+    .hash(password, 10)
+
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
+
+    .then(() => {
+      res.send(new User({
+        name, about, avatar, email,
+      }));
+    })
+
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_400).send({ message: err.message });
+      if (err.code === 11000) {
+        return next(new SameEntryError('Пользователь с таким email уже существует'));
       }
 
-      return res.status(ERROR_CODE_500).send({
-        message: 'На сервере произошла ошибка',
-      });
+      return next(err);
     });
 };
 
 // контроллер обновления данных пользователя
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { name, about }, { runValidators: true })
-    .then(() => res.send(new User({ name, about })))
+  User.findByIdAndUpdate(req.user._id, { name, about })
+    .then((user) => res.send(new User({ name, about, avatar: user.avatar })))
 
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_400).send({ message: err.message });
-      }
-
-      if (err.name === 'CastError') {
-        return res.status(ERROR_CODE_404).send({
-          message: 'Пользователь с указанным _id не найден.',
-        });
-      }
-
-      return res.status(ERROR_CODE_500).send({
-        message: 'На сервере произошла ошибка.',
-      });
-    });
+    .catch(next);
 };
 
 // контроллер обновления аватара пользователя
-module.exports.updateUserAvatar = (req, res) => {
+module.exports.updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { avatar }, { runValidators: true })
-    .then(() => res.send(new User({ avatar })))
+  User.findByIdAndUpdate(req.user._id, { avatar })
+    .then((user) => res.send(new User({ name: user.name, about: user.about, avatar })))
 
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE_400).send({
-          message: 'Переданы некорректные данные при обновлении аватара.',
-        });
-      }
+    .catch(next);
+};
 
-      if (err.name === 'CastError') {
-        return res.status(ERROR_CODE_404).send({
-          message: 'Пользователь с указанным _id не найден.',
-        });
-      }
+// контроллер логина пользователя
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
 
-      return res.status(ERROR_CODE_500).send({
-        message: 'На сервере произошла ошибка.',
-      });
-    });
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        'someKey',
+        { expiresIn: '7d' },
+      );
+      res
+        .cookie('jwt', token, {
+          maxAge: 36000000,
+          httpOnly: true,
+          sameSite: true,
+        })
+        .send({ message: 'Авторизация успешна' });
+    })
+
+    .catch((err) => next(new WrongMailOrPassError(err.message)));
 };
