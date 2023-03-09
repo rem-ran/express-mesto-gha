@@ -2,7 +2,6 @@ const Card = require('../models/card');
 
 // импорт собственных ошибок
 const NotFoundError = require('../errors/NotFoundError');
-const NotValidError = require('../errors/NotValidError');
 const NoRightsError = require('../errors/NoRightsError');
 
 
@@ -45,14 +44,7 @@ module.exports.deleteCard = (req, res, next) => {
     } throw new NoRightsError('Нельзя удалять чужие карточки.');
   })
 
-  .catch((err) => {
-
-    if (err.name === 'CastError') {
-      return next(new NotValidError('Указан некорректный id карточки.'))
-    }
-
-    next(err);
-  });
+  .catch(next)
   }
 
 // контроллер постановки лайка карточке
@@ -74,14 +66,7 @@ module.exports.putCardLike = (req, res, next) => {
       return res.send({ message: 'Лайк успешно поставлен' });
     })
 
-    .catch((err) => {
-
-      if (err.name === 'CastError') {
-        return next(new NotValidError('Указан некорректный id карточки.'))
-      }
-
-      next(err);
-    });
+    .catch(next)
 };
 
 // контроллер удаления лайка у карточки
@@ -101,12 +86,5 @@ module.exports.deleteCardLike = (req, res, next) => {
       return res.send({ message: 'Лайк успешно удалён' });
     })
 
-    .catch((err) => {
-
-      if (err.name === 'CastError') {
-        return next(new NotValidError('Указан некорректный id карточки.'))
-      }
-
-      next(err);
-    });
+    .catch(next)
 };

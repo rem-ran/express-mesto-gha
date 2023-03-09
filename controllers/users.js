@@ -4,7 +4,6 @@ const User = require('../models/user');
 
 // импорт собственных ошибок
 const NotFoundError = require('../errors/NotFoundError');
-const NotValidError = require('../errors/NotValidError');
 const SameEntryError = require('../errors/SameEntryError');
 const WrongMailOrPassError = require('../errors/WrongMailOrPassError');
 
@@ -39,15 +38,7 @@ module.exports.getUserById = (req, res, next) => {
       return res.send(user);
     })
 
-    .catch((err) => {
-
-      if (err.name === 'CastError') {
-        return next(new NotValidError('_id указан некорректно.'))
-      }
-
-      return next(err);
-
-    })
+    .catch(next)
 };
 
 // контроллер создания нового пользователя
