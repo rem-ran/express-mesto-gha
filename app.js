@@ -29,8 +29,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.post('/signin', celebrate({
 
 body: Joi.object().keys({
-  email: Joi.string().required(),
-  password: Joi.string().required(),
+  email: Joi.string().required().min(2).max(30),
+  password: Joi.string().required().min(2).max(30),
 }),
 
 }), login);
@@ -39,8 +39,8 @@ body: Joi.object().keys({
 app.post('/signup', celebrate({
 
 body: Joi.object().keys({
-  name: Joi.string(),
-  about: Joi.string(),
+  name: Joi.string().min(2).max(30),
+  about: Joi.string().min(2).max(30),
   avatar: Joi.string(),
   email: Joi.string().required(),
   password: Joi.string().required(),
@@ -68,16 +68,15 @@ app.use('/users', userRouter);
 // });
 
 // обработчик ошибок celebrate
-// app.use(errors());
-
+app.use(errors());
 
 // централизованный обработчик ошибок
 app.use((err, req, res, next) => {
 
   // обработчик ошибок celebrate
-  if (isCelebrateError(err)) {
-    res.status(ERROR_CODE_400).send({message: err.message})
-  }
+  // if (isCelebrateError(err)) {
+  //   res.status(ERROR_CODE_400).send({message: err.message})
+  // }
 
   if (err) {
     res.status(err.statusCode).send({ message: err.message });

@@ -84,9 +84,6 @@ module.exports.createUser = (req, res, next) => {
   bcrypt
     .hash(password, 10)
     .then((hash) => User.create({
-      name,
-      about,
-      avatar,
       email,
       password: hash,
     }))
@@ -202,7 +199,7 @@ module.exports.login = (req, res, next) => {
           httpOnly: true,
           sameSite: true,
         })
-        .end();
+        .send({message: 'Авторизация успешна'})
     })
 
     .catch((err) => next(new WrongMailOrPassError(err.message)))
