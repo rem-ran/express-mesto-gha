@@ -2,13 +2,13 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const mongoose = require('mongoose');
-const { celebrate, Joi, errors, isCelebrateError } = require('celebrate');
+const { celebrate, Joi, errors } = require('celebrate');
 const bodyParser = require('body-parser');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 const auth = require('./middlewares/auth');
 const { login, createUser } = require('./controllers/users');
-const { ERROR_CODE_404, ERROR_CODE_500, ERROR_CODE_400 } = require('./utils/constants');
+const { ERROR_CODE_404, ERROR_CODE_500 } = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
 
@@ -29,8 +29,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.post('/signin', celebrate({
 
 body: Joi.object().keys({
-  email: Joi.string().required().min(2).max(30),
-  password: Joi.string().required().min(2).max(30),
+  email: Joi.string().required().email(),
+  password: Joi.string().required(),
 }),
 
 }), login);
@@ -41,8 +41,8 @@ app.post('/signup', celebrate({
 body: Joi.object().keys({
   name: Joi.string().min(2).max(30),
   about: Joi.string().min(2).max(30),
-  avatar: Joi.string(),
-  email: Joi.string().required(),
+  avatar: Joi.string().regex(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/),
+  email: Joi.string().required().email(),
   password: Joi.string().required(),
 }),
 
@@ -55,28 +55,11 @@ app.use('/cards', cardRouter);
 
 app.use('/users', userRouter);
 
-
-
-
-// app.use((err, req, res, next) => {
-
-//   if (isCelebrateError(err)) {
-//     res.status(ERROR_CODE_400).send({ message: err})
-//   }
-
-//   next(err);
-// });
-
 // обработчик ошибок celebrate
 app.use(errors());
 
 // централизованный обработчик ошибок
 app.use((err, req, res, next) => {
-
-  // обработчик ошибок celebrate
-  // if (isCelebrateError(err)) {
-  //   res.status(ERROR_CODE_400).send({message: err.message})
-  // }
 
   if (err) {
     res.status(err.statusCode).send({ message: err.message });

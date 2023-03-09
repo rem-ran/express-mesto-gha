@@ -3,7 +3,6 @@ const Card = require('../models/card');
 // импорт собственных ошибок
 const NotFoundError = require('../errors/NotFoundError');
 const NotValidError = require('../errors/NotValidError');
-const ValidationError = require('../errors/ValidationError');
 const NoRightsError = require('../errors/NoRightsError');
 
 
@@ -12,9 +11,6 @@ module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send(cards))
     .catch(next)
-    // .catch(() => res
-    //   .status(ERROR_CODE_500)
-    //   .send({ message: 'Произошла ошибка получения карточек' }));
 };
 
 // контроллер создания новой карточки
@@ -24,21 +20,7 @@ module.exports.createCard = (req, res, next) => {
 
   Card.create({ name, link, owner })
     .then((card) => res.send(card))
-    .catch((err) => {
-
-      if (err.name === 'ValidationError') {
-        return next(new ValidationError(err.message));
-      }
-
-      // if (err.name === 'ValidationError') {
-      //   return res.status(ERROR_CODE_400).send({ message: err.message });
-      // }
-
-      // return res.status(ERROR_CODE_500).send({
-      //   message: 'На сервере произошла ошибка',
-      // });
-      return next(err);
-    });
+    .catch(next)
 };
 
 // контроллер удаления карточеки
@@ -54,25 +36,13 @@ module.exports.deleteCard = (req, res, next) => {
       throw new NotFoundError('Карточка по указанному _id не найдена.');
     }
 
-    // if (!card) {
-    //   return res
-    //     .status(ERROR_CODE_400)
-    //     .send({ message: 'Карточка по указанному _id не найдена.' });
-    // }
-
     if (card.owner == _id) {
       return Card.findByIdAndRemove(cardId)
         .then(() => res.send({ message: 'Карточка удалена.' }))
 
         .catch(next)
 
-        // .catch((err) => res
-        //   .status(ERROR_CODE_500)
-        //   .send({message: 'На сервере произошла ошибка.'}));
-
     } throw new NoRightsError('Нельзя удалять чужие карточки.');
-
-    // } return res.status(ERROR_CODE_403).send({ message: 'Нельзя удалять чужие карточки' })
   })
 
   .catch((err) => {
@@ -81,20 +51,8 @@ module.exports.deleteCard = (req, res, next) => {
       return next(new NotValidError('Указан некорректный id карточки.'))
     }
 
-    // if (err.name === 'CastError') {
-    //   return res.status(ERROR_CODE_404).send({
-    //     message: 'Указан некорректный id карточки',
-    //   });
-    // }
-
-    // return res.status(ERROR_CODE_500).send({
-    //   message: 'На сервере произошла ошибка.',
-    // });
-
     next(err);
-
   });
-
   }
 
 // контроллер постановки лайка карточке
@@ -113,12 +71,6 @@ module.exports.putCardLike = (req, res, next) => {
         throw new NotFoundError('Карточка по указанному _id не найдена.');
       }
 
-      // if (card === null) {
-      //   return res
-      //     .status(ERROR_CODE_404)
-      //     .send({ message: 'Карточка по указанному _id не найдена.' });
-      // }
-
       return res.send({ message: 'Лайк успешно поставлен' });
     })
 
@@ -128,15 +80,6 @@ module.exports.putCardLike = (req, res, next) => {
         return next(new NotValidError('Указан некорректный id карточки.'))
       }
 
-      // if (err.name === 'CastError') {
-      //   return res.status(ERROR_CODE_400).send({
-      //     message: 'Указан некорректный id карточки',
-      //   });
-      // }
-
-      // return res.status(ERROR_CODE_500).send({
-      //   message: 'На сервере произошла ошибка.',
-      // });
       next(err);
     });
 };
@@ -155,11 +98,6 @@ module.exports.deleteCardLike = (req, res, next) => {
         throw new NotFoundError('Карточка по указанному _id не найдена.');
       }
 
-      // if (card === null) {
-      //   return res
-      //     .status(ERROR_CODE_404)
-      //     .send({ message: 'Карточка по указанному _id не найдена.' });
-      // }
       return res.send({ message: 'Лайк успешно удалён' });
     })
 
@@ -169,15 +107,6 @@ module.exports.deleteCardLike = (req, res, next) => {
         return next(new NotValidError('Указан некорректный id карточки.'))
       }
 
-      // if (err.name === 'CastError') {
-      //   return res.status(ERROR_CODE_400).send({
-      //     message: 'Указан некорректный id карточки',
-      //   });
-      // }
-
-      // return res.status(ERROR_CODE_500).send({
-      //   message: 'На сервере произошла ошибка.',
-      // });
       next(err);
     });
 };
