@@ -4,12 +4,11 @@ const Card = require('../models/card');
 const NotFoundError = require('../errors/NotFoundError');
 const NoRightsError = require('../errors/NoRightsError');
 
-
 // контроллер получения имеющихся карточек
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send(cards))
-    .catch(next)
+    .catch(next);
 };
 
 // контроллер создания новой карточки
@@ -19,7 +18,7 @@ module.exports.createCard = (req, res, next) => {
 
   Card.create({ name, link, owner })
     .then((card) => res.send(card))
-    .catch(next)
+    .catch(next);
 };
 
 // контроллер удаления карточеки
@@ -29,23 +28,19 @@ module.exports.deleteCard = (req, res, next) => {
 
   Card.findById(cardId)
 
-  .then((card) => {
+    .then((card) => {
+      if (!card) {
+        throw new NotFoundError('Карточка по указанному _id не найдена.');
+      }
 
-    if (!card) {
-      throw new NotFoundError('Карточка по указанному _id не найдена.');
-    }
+      if (card.owner.toString() === _id.toString()) {
+        return Card.findByIdAndRemove(cardId)
+          .then(() => res.send({ message: 'Карточка удалена.' }));
+      } throw new NoRightsError('Нельзя удалять чужие карточки.');
+    })
 
-    if (card.owner == _id) {
-      return Card.findByIdAndRemove(cardId)
-        .then(() => res.send({ message: 'Карточка удалена.' }))
-
-        .catch(next)
-
-    } throw new NoRightsError('Нельзя удалять чужие карточки.');
-  })
-
-  .catch(next)
-  }
+    .catch((err) => next(err));
+};
 
 // контроллер постановки лайка карточке
 module.exports.putCardLike = (req, res, next) => {
@@ -58,7 +53,6 @@ module.exports.putCardLike = (req, res, next) => {
   )
 
     .then((card) => {
-
       if (!card) {
         throw new NotFoundError('Карточка по указанному _id не найдена.');
       }
@@ -66,7 +60,7 @@ module.exports.putCardLike = (req, res, next) => {
       return res.send({ message: 'Лайк успешно поставлен' });
     })
 
-    .catch(next)
+    .catch(next);
 };
 
 // контроллер удаления лайка у карточки
@@ -78,7 +72,6 @@ module.exports.deleteCardLike = (req, res, next) => {
   )
 
     .then((card) => {
-
       if (!card) {
         throw new NotFoundError('Карточка по указанному _id не найдена.');
       }
@@ -86,5 +79,5 @@ module.exports.deleteCardLike = (req, res, next) => {
       return res.send({ message: 'Лайк успешно удалён' });
     })
 
-    .catch(next)
+    .catch(next);
 };

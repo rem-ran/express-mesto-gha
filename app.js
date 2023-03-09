@@ -9,6 +9,7 @@ const cardRouter = require('./routes/cards');
 const auth = require('./middlewares/auth');
 const { login, createUser } = require('./controllers/users');
 const { ERROR_CODE_404, ERROR_CODE_500 } = require('./utils/constants');
+const { regexUrl } = require('./utils/regexUrl');
 
 const { PORT = 3000 } = process.env;
 
@@ -28,23 +29,23 @@ app.use(express.static(path.join(__dirname, 'public')));
 // авторизация пользователя с валидацией
 app.post('/signin', celebrate({
 
-body: Joi.object().keys({
-  email: Joi.string().required().email(),
-  password: Joi.string().required(),
-}),
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+  }),
 
 }), login);
 
 // создание нового пользователя с валидацией
 app.post('/signup', celebrate({
 
-body: Joi.object().keys({
-  name: Joi.string().min(2).max(30),
-  about: Joi.string().min(2).max(30),
-  avatar: Joi.string().regex(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/),
-  email: Joi.string().required().email(),
-  password: Joi.string().required(),
-}),
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().regex(regexUrl),
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+  }),
 
 }), createUser);
 
@@ -60,12 +61,10 @@ app.use(errors());
 
 // централизованный обработчик ошибок
 app.use((err, req, res, next) => {
-
   if (err) {
     res.status(err.statusCode).send({ message: err.message });
   }
   res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка.' });
-
 });
 
 // обработчик несуществующего рута

@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
+const { regexUrl } = require('../utils/regexUrl');
 
 const {
   getUsers,
@@ -22,15 +23,15 @@ router.get('/:userId', celebrate({
     userId: Joi.string().alphanum().length(24),
   }),
 
-  }), getUserById);
+}), getUserById);
 
 // рутер обновление данных пользователя
 router.patch('/me', celebrate({
 
-body: Joi.object().keys({
-  name: Joi.string().min(2).max(30),
-  about: Joi.string().min(2).max(30),
-}),
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+  }),
 
 }), updateUser);
 
@@ -38,9 +39,9 @@ body: Joi.object().keys({
 router.patch('/me/avatar', celebrate({
 
   body: Joi.object().keys({
-    avatar: Joi.string().regex(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/),
+    avatar: Joi.string().regex(regexUrl),
   }),
 
-  }), updateUserAvatar);
+}), updateUserAvatar);
 
 module.exports = router;
