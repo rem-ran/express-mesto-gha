@@ -1,5 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const NotFoundError = require('../errors/NotFoundError');
+const NotValidError = require('../errors/NotValidError');
+const ServerError = require('../errors/ServerError');
 const User = require('../models/user');
 
 const {
@@ -30,31 +33,44 @@ module.exports.getUser = (req, res) => {
 };
 
 // контроллер поиска пользователя по его id
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   const { userId } = req.params;
 
   User.findById(userId)
 
     .then((user) => {
-      if (user === null) {
-        return res
-          .status(ERROR_CODE_404)
-          .send({ message: 'Пользователь по указанному _id не найден.' });
+      if (!user) {
+
+        throw new NotFoundError('Пользователь с указанным _id не найден.');
+
+        // return res
+        //   .status(ERROR_CODE_404)
+        //   .send({ message: 'Пользователь по указанному _id не найден.' });
+
       }
+
       return res.send(user);
     })
 
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res
-          .status(ERROR_CODE_400)
-          .send({ message: '_id указан некорректно.' });
+
+        return next(new NotValidError('_id указан некорректно.'))
+
+        // return res
+        //   .status(ERROR_CODE_400)
+        //   .send({ message: '_id указан некорректно.' });
       }
 
-      return res.status(ERROR_CODE_500).send({
-        message: 'На сервере произошла ошибка',
-      });
-    });
+      return next(err);
+
+      // return next(new ServerError('На сервере произошла ошибка.'))
+
+      // return res.status(ERROR_CODE_500).send({
+      //   message: 'На сервере произошла ошибка',
+      // });
+
+    })
 };
 
 // контроллер создания нового пользователя

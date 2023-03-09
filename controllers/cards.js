@@ -1,6 +1,7 @@
 const Card = require('../models/card');
 const {
   ERROR_CODE_400,
+  ERROR_CODE_403,
   ERROR_CODE_404,
   ERROR_CODE_500,
 } = require('../utils/constants');
@@ -54,7 +55,7 @@ module.exports.deleteCard = (req, res) => {
           .status(ERROR_CODE_500)
           .send({message: 'На сервере произошла ошибка.'}));
 
-    } return res.send({ message: 'Нельзя удалять чужие карточки' })
+    } return res.status(ERROR_CODE_403).send({ message: 'Нельзя удалять чужие карточки' })
   })
 
   .catch((err) => {

@@ -37,8 +37,9 @@ app.use('/cards', cardRouter);
 
 app.use('/users', userRouter);
 
-app.use((req, res) => {
-  res.status(ERROR_CODE_404).send({ message: 'Запрошен несуществующий роут' });
+app.use((err, req, res, next) => {
+  res.status(err.statusCode).send({ message: err.message });
+  // res.status(ERROR_CODE_404).send({ message: 'Запрошен несуществующий роут' });
 });
 
 app.listen(PORT);
