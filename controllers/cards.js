@@ -3,6 +3,7 @@ const Card = require('../models/card');
 // импорт собственных ошибок
 const NotFoundError = require('../errors/NotFoundError');
 const NoRightsError = require('../errors/NoRightsError');
+const ValidationError = require('../errors/ValidationError');
 
 // контроллер получения имеющихся карточек
 module.exports.getCards = (req, res, next) => {
@@ -18,7 +19,13 @@ module.exports.createCard = (req, res, next) => {
 
   Card.create({ name, link, owner })
     .then((card) => res.send(card))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return next(new ValidationError(err.message));
+      }
+
+      return next(err);
+    });
 };
 
 // контроллер удаления карточеки
@@ -39,7 +46,13 @@ module.exports.deleteCard = (req, res, next) => {
       } throw new NoRightsError('Нельзя удалять чужие карточки.');
     })
 
-    .catch((err) => next(err));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return next(new NotFoundError('Указан некорректный id карточки.'));
+      }
+
+      return next(err);
+    });
 };
 
 // контроллер постановки лайка карточке
@@ -60,7 +73,13 @@ module.exports.putCardLike = (req, res, next) => {
       return res.send({ message: 'Лайк успешно поставлен' });
     })
 
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return next(new NotFoundError('Указан некорректный id карточки.'));
+      }
+
+      return next(err);
+    });
 };
 
 // контроллер удаления лайка у карточки
@@ -79,5 +98,11 @@ module.exports.deleteCardLike = (req, res, next) => {
       return res.send({ message: 'Лайк успешно удалён' });
     })
 
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return next(new NotFoundError('Указан некорректный id карточки.'));
+      }
+
+      return next(err);
+    });
 };

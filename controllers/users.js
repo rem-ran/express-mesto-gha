@@ -5,7 +5,7 @@ const User = require('../models/user');
 // импорт собственных ошибок
 const NotFoundError = require('../errors/NotFoundError');
 const SameEntryError = require('../errors/SameEntryError');
-const WrongMailOrPassError = require('../errors/WrongMailOrPassError');
+const ValidationError = require('../errors/ValidationError');
 
 // контроллер получения имеющихся пользователей
 module.exports.getUsers = (req, res, next) => {
@@ -36,7 +36,13 @@ module.exports.getUserById = (req, res, next) => {
       return res.send(user);
     })
 
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return next(new NotFoundError('_id указан некорректно.'));
+      }
+
+      return next(err);
+    });
 };
 
 // контроллер создания нового пользователя
@@ -63,6 +69,10 @@ module.exports.createUser = (req, res, next) => {
     })
 
     .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return next(new ValidationError(err.message));
+      }
+
       if (err.code === 11000) {
         return next(new SameEntryError('Пользователь с таким email уже существует'));
       }
@@ -75,20 +85,32 @@ module.exports.createUser = (req, res, next) => {
 module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { name, about })
+  User.findByIdAndUpdate(req.user._id, { name, about }, { runValidators: true })
     .then((user) => res.send(new User({ name, about, avatar: user.avatar })))
 
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return next(new ValidationError(err.message));
+      }
+
+      return next(err);
+    });
 };
 
 // контроллер обновления аватара пользователя
 module.exports.updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { avatar })
+  User.findByIdAndUpdate(req.user._id, { avatar }, { runValidators: true })
     .then((user) => res.send(new User({ name: user.name, about: user.about, avatar })))
 
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return next(new ValidationError(err.message));
+      }
+
+      return next(err);
+    });
 };
 
 // контроллер логина пользователя
@@ -111,5 +133,5 @@ module.exports.login = (req, res, next) => {
         .send({ message: 'Авторизация успешна' });
     })
 
-    .catch((err) => next(new WrongMailOrPassError(err.message)));
+    .catch(next);
 };
