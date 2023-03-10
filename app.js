@@ -1,6 +1,5 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
-const path = require('path');
 const mongoose = require('mongoose');
 const { celebrate, Joi, errors } = require('celebrate');
 const bodyParser = require('body-parser');
@@ -8,8 +7,9 @@ const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 const auth = require('./middlewares/auth');
 const { login, createUser } = require('./controllers/users');
-const { ERROR_CODE_404, ERROR_CODE_500 } = require('./utils/constants');
+const { ERROR_CODE_500 } = require('./utils/constants');
 const { regexUrl } = require('./utils/regexUrl');
+const WrongRouteError = require('./errors/WrongRouteError');
 
 const { PORT = 3000 } = process.env;
 
@@ -23,8 +23,6 @@ app.use(bodyParser.json());
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useNewUrlParser: true,
 });
-
-app.use(express.static(path.join(__dirname, 'public')));
 
 // авторизация пользователя с валидацией
 app.post('/signin', celebrate({
@@ -56,21 +54,35 @@ app.use('/cards', cardRouter);
 
 app.use('/users', userRouter);
 
+// обработчик несуществующего рута
+// eslint-disable-next-line no-unused-vars
+app.use((req, res) => {
+  throw new WrongRouteError('Запрошен несуществующий роут.');
+});
+
 // обработчик ошибок celebrate
 app.use(errors());
 
 // централизованный обработчик ошибок
+// eslint-disable-next-line no-unused-vars
+// app.use((err, req, res, next) => {
+//   const { errorStatus = ERROR_CODE_500, errorMessage } = err;
+
+//   res
+//     .status(errorStatus)
+//     .send({
+//       message: errorStatus === ERROR_CODE_500
+//         ? 'На сервере произошла ошибка.'
+//         : errorMessage,
+//     });
+// });
+
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (err) {
     res.status(err.statusCode).send({ message: err.message });
   }
   res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка.' });
-});
-
-// обработчик несуществующего рута
-app.use((req, res) => {
-  res.status(ERROR_CODE_404).send({ message: 'Запрошен несуществующий роут' });
 });
 
 app.listen(PORT);
