@@ -1,14 +1,11 @@
 const jwt = require('jsonwebtoken');
-
-const { ERROR_CODE_401 } = require('../utils/constants');
+const AuthError = require('../errors/AuthError');
 
 module.exports = (req, res, next) => {
   const token = req.cookies.jwt;
 
   if (!token) {
-    return res
-      .status(ERROR_CODE_401)
-      .send({ message: 'Необходима авторизация' });
+    throw new AuthError('Необходима авторизация.');
   }
 
   let payload;
@@ -16,9 +13,7 @@ module.exports = (req, res, next) => {
   try {
     payload = jwt.verify(token, 'someKey');
   } catch (err) {
-    return res
-      .status(ERROR_CODE_401)
-      .send({ message: 'Необходима авторизация' });
+    next(new AuthError('Необходима авторизация.'));
   }
 
   req.user = payload;
