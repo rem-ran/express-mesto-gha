@@ -55,8 +55,8 @@ app.use('/users', userRouter);
 
 // обработчик несуществующего рута
 // eslint-disable-next-line no-unused-vars
-app.use((req, res) => {
-  throw new NotFoundError('Запрошен несуществующий роут.');
+app.use((req, res, next) => {
+  next(new NotFoundError('Запрошен несуществующий роут.'));
 });
 
 // обработчик ошибок celebrate

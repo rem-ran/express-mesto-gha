@@ -28,7 +28,7 @@ module.exports.createCard = (req, res, next) => {
     });
 };
 
-// контроллер удаления карточеки
+// контроллер удаления карточки
 module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
   const { _id } = req.user;
@@ -40,11 +40,14 @@ module.exports.deleteCard = (req, res, next) => {
         throw new NotFoundError('Карточка по указанному _id не найдена.');
       }
 
-      if (card.owner.toString() === _id.toString()) {
-        return Card.findByIdAndRemove(cardId)
-          .then(() => res.send({ message: 'Карточка удалена.' }));
-      } throw new NoRightsError('Нельзя удалять чужие карточки.');
+      if (card.owner.toString() !== _id.toString()) {
+        throw new NoRightsError('Нельзя удалять чужие карточки.');
+      }
+
+      return Card.findByIdAndRemove(cardId);
     })
+
+    .then(() => res.send({ message: 'Карточка удалена.' }))
 
     .catch((err) => {
       if (err.name === 'CastError') {
